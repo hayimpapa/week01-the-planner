@@ -3,13 +3,23 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import ReactGA from 'react-ga4'
 import AboutPage from './AboutPage.jsx'
 
-const STATUSES = ['Backlog', 'Analysis', 'In Progress', 'Done']
+const DEV_STATUSES = ['Backlog', 'Analysis', 'In Progress', 'Testing', 'Done']
+const LINKEDIN_STATUSES = ['To Do', 'Draft', 'Published']
+const YOUTUBE_STATUSES = ['To Do', 'In Progress', 'Published']
 
-const STATUS_CLASS = {
+const DEV_STATUS_CLASS = {
   Backlog: 'backlog',
   Analysis: 'analysis',
   'In Progress': 'in-progress',
+  Testing: 'testing',
   Done: 'done',
+}
+
+const CONTENT_STATUS_CLASS = {
+  'To Do': 'todo',
+  Draft: 'draft',
+  'In Progress': 'in-progress',
+  Published: 'published',
 }
 
 function getWeekDates(weekIndex) {
@@ -23,11 +33,11 @@ function getWeekDates(weekIndex) {
 }
 
 const DEFAULT_BACKLOG = [
-  { id: 'idea-1', name: 'Portfolio Tracker', description: 'Track investment portfolio performance', status: 'Backlog', note: '' },
-  { id: 'idea-2', name: 'Receipt Analyser', description: 'Scan and categorise receipts with OCR', status: 'Backlog', note: '' },
-  { id: 'idea-3', name: 'Melbourne Suburb Scorer', description: 'Rate and compare Melbourne suburbs', status: 'Backlog', note: '' },
-  { id: 'idea-4', name: 'Flight Deal Watcher', description: 'Monitor and alert on cheap flight deals', status: 'Backlog', note: '' },
-  { id: 'idea-5', name: 'Cat Health Log', description: 'Track cat health records and vet visits', status: 'Backlog', note: '' },
+  { id: 'idea-1', name: 'Portfolio Tracker', description: 'Track investment portfolio performance', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
+  { id: 'idea-2', name: 'Receipt Analyser', description: 'Scan and categorise receipts with OCR', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
+  { id: 'idea-3', name: 'Melbourne Suburb Scorer', description: 'Rate and compare Melbourne suburbs', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
+  { id: 'idea-4', name: 'Flight Deal Watcher', description: 'Monitor and alert on cheap flight deals', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
+  { id: 'idea-5', name: 'Cat Health Log', description: 'Track cat health records and vet visits', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
 ]
 
 const DEFAULT_SCHEDULE = Array.from({ length: 52 }, (_, i) => {
@@ -38,6 +48,8 @@ const DEFAULT_SCHEDULE = Array.from({ length: 52 }, (_, i) => {
         name: 'The Planner',
         description: 'This app — 52 Builds Tracker',
         status: 'In Progress',
+        linkedin: 'To Do',
+        youtube: 'To Do',
         note: '',
       },
     }
@@ -48,6 +60,8 @@ const DEFAULT_SCHEDULE = Array.from({ length: 52 }, (_, i) => {
         name: 'Flappy Tram',
         description: 'Flappy Bird clone with Melbourne trams',
         status: 'Analysis',
+        linkedin: 'To Do',
+        youtube: 'To Do',
         note: '',
       },
     }
@@ -74,7 +88,27 @@ function trackEvent(action, label) {
   }
 }
 
-function IdeaCard({ idea, onStatusChange, onNoteChange, onRemove, provided, isDragging }) {
+function StatusSelect({ label, value, options, classMap, onChange }) {
+  return (
+    <div className="status-group" onClick={(e) => e.stopPropagation()}>
+      <span className="status-label">{label}</span>
+      <select
+        className={`status-select ${classMap[value] || ''}`}
+        value={value}
+        onChange={(e) => {
+          e.stopPropagation()
+          onChange(e.target.value)
+        }}
+      >
+        {options.map((s) => (
+          <option key={s} value={s}>{s}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, provided, isDragging }) {
   const [showNote, setShowNote] = useState(!!idea.note)
 
   return (
@@ -86,21 +120,6 @@ function IdeaCard({ idea, onStatusChange, onNoteChange, onRemove, provided, isDr
     >
       <div className="card-header">
         <span className="card-name">{idea.name}</span>
-        <select
-          className={`status-select ${STATUS_CLASS[idea.status]}`}
-          value={idea.status}
-          onChange={(e) => {
-            e.stopPropagation()
-            onStatusChange(idea.id, e.target.value)
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
         {onRemove && (
           <button
             className="remove-btn"
@@ -115,6 +134,29 @@ function IdeaCard({ idea, onStatusChange, onNoteChange, onRemove, provided, isDr
         )}
       </div>
       <div className="card-description">{idea.description}</div>
+      <div className="card-statuses">
+        <StatusSelect
+          label="Dev"
+          value={idea.status}
+          options={DEV_STATUSES}
+          classMap={DEV_STATUS_CLASS}
+          onChange={(v) => onFieldChange(idea.id, 'status', v)}
+        />
+        <StatusSelect
+          label="LinkedIn"
+          value={idea.linkedin || 'To Do'}
+          options={LINKEDIN_STATUSES}
+          classMap={CONTENT_STATUS_CLASS}
+          onChange={(v) => onFieldChange(idea.id, 'linkedin', v)}
+        />
+        <StatusSelect
+          label="YouTube"
+          value={idea.youtube || 'To Do'}
+          options={YOUTUBE_STATUSES}
+          classMap={CONTENT_STATUS_CLASS}
+          onChange={(v) => onFieldChange(idea.id, 'youtube', v)}
+        />
+      </div>
       <button className="note-toggle" onClick={() => setShowNote(!showNote)}>
         {showNote ? 'hide note' : '+ note'}
       </button>
@@ -145,12 +187,12 @@ export default function App() {
     saveData(data)
   }, [data])
 
-  const updateStatus = useCallback((id, status) => {
-    trackEvent('status_change', `${id}:${status}`)
+  const updateField = useCallback((id, field, value) => {
+    trackEvent('status_change', `${id}:${field}:${value}`)
     setData((prev) => ({
-      backlog: prev.backlog.map((i) => (i.id === id ? { ...i, status } : i)),
+      backlog: prev.backlog.map((i) => (i.id === id ? { ...i, [field]: value } : i)),
       schedule: prev.schedule.map((w) =>
-        w.idea?.id === id ? { idea: { ...w.idea, status } } : w
+        w.idea?.id === id ? { idea: { ...w.idea, [field]: value } } : w
       ),
     }))
   }, [])
@@ -173,6 +215,8 @@ export default function App() {
       name,
       description: '',
       status: 'Backlog',
+      linkedin: 'To Do',
+      youtube: 'To Do',
       note: '',
     }
     setData((prev) => ({ ...prev, backlog: [...prev.backlog, idea] }))
@@ -322,7 +366,7 @@ export default function App() {
                     {(prov, snapshot) => (
                       <IdeaCard
                         idea={idea}
-                        onStatusChange={updateStatus}
+                        onFieldChange={updateField}
                         onNoteChange={updateNote}
                         provided={prov}
                         isDragging={snapshot.isDragging}
@@ -369,7 +413,7 @@ export default function App() {
                           {(prov, snap) => (
                             <IdeaCard
                               idea={week.idea}
-                              onStatusChange={updateStatus}
+                              onFieldChange={updateField}
                               onNoteChange={updateNote}
                               onRemove={removeFromSchedule}
                               provided={prov}

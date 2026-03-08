@@ -21,7 +21,11 @@
   --status-backlog: #555;
   --status-analysis: #c9a227;
   --status-progress: #3b82f6;
+  --status-testing: #a855f7;
   --status-done: #22c55e;
+  --status-todo: #555;
+  --status-draft: #3b82f6;
+  --status-published: #22c55e;
 }
 
 body {
@@ -226,6 +230,28 @@ body {
   white-space: nowrap;
 }
 
+/* Card status row */
+.card-statuses {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+
 .card-note {
   margin-top: 6px;
   padding-top: 6px;
@@ -329,6 +355,26 @@ body {
 
 .status-select.done {
   background: var(--status-done);
+  color: #1a1a1a;
+}
+
+.status-select.testing {
+  background: var(--status-testing);
+  color: #fff;
+}
+
+.status-select.todo {
+  background: var(--status-todo);
+  color: #ddd;
+}
+
+.status-select.draft {
+  background: var(--status-draft);
+  color: #fff;
+}
+
+.status-select.published {
+  background: var(--status-published);
   color: #1a1a1a;
 }
 
