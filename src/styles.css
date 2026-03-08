@@ -668,6 +668,101 @@ body {
   color: #fff;
 }
 
+/* Conflict Dialog */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+}
+
+.dialog h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.dialog p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dialog-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dialog-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.dialog-btn.overwrite:hover {
+  border-color: #c9a227;
+}
+
+.dialog-btn.insert:hover {
+  border-color: var(--status-progress);
+}
+
+.dialog-btn.cancel {
+  text-align: center;
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+  padding: 6px;
+}
+
+.dialog-btn-desc {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.dialog-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.dialog-remember input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .app-layout {
