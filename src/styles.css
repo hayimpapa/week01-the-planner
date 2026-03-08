@@ -178,22 +178,24 @@ body {
 }
 
 .generate-btn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
+  width: calc(100% - 16px);
+  margin: 4px 8px 8px;
+  background: linear-gradient(135deg, #6c3fb5, #4a6cf7);
+  border: 1px solid #7c5fbf;
+  color: #fff;
   padding: 8px 14px;
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .generate-btn:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
+  background: linear-gradient(135deg, #7d4fc6, #5b7df8);
+  border-color: #9370db;
+  box-shadow: 0 2px 12px rgba(108, 63, 181, 0.3);
 }
 
 .backlog-list {

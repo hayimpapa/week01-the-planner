@@ -617,8 +617,10 @@ export default function App() {
               onKeyDown={(e) => e.key === 'Enter' && addIdea()}
             />
             <button onClick={addIdea}>Add</button>
-            <button className="generate-btn" onClick={handleGenerate}>Generate</button>
           </div>
+          <button className="generate-btn" onClick={handleGenerate}>
+            Generate AI Idea
+          </button>
           <Droppable droppableId="backlog">
             {(provided) => (
               <div
