@@ -111,12 +111,18 @@ function StatusSelect({ label, value, options, classMap, onChange }) {
 function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, provided, isDragging }) {
   const [showNote, setShowNote] = useState(!!idea.note)
 
+  const dragProps = provided
+    ? {
+        ref: provided.innerRef,
+        ...provided.draggableProps,
+        ...provided.dragHandleProps,
+      }
+    : {}
+
   return (
     <div
       className={`idea-card${isDragging ? ' dragging' : ''}`}
-      ref={provided?.innerRef}
-      {...(provided?.draggableProps || {})}
-      {...(provided?.dragHandleProps || {})}
+      {...dragProps}
     >
       <div className="card-header">
         <span className="card-name">{idea.name}</span>
@@ -389,7 +395,7 @@ export default function App() {
           </div>
           <div className="schedule-list">
             {data.schedule.map((week, index) => (
-              <Droppable key={index} droppableId={`week-${index}`}>
+              <Droppable key={index} droppableId={`week-${index}`} direction="horizontal">
                 {(provided, snapshot) => (
                   <div
                     className={`week-row${index === 0 ? ' current-week' : ''}${
@@ -404,28 +410,34 @@ export default function App() {
                       W{index + 1}
                     </span>
                     <span className="week-dates">{getWeekDates(index)}</span>
-                    <div className="week-slot">
-                      {week.idea ? (
-                        <Draggable
-                          draggableId={week.idea.id}
-                          index={0}
-                        >
-                          {(prov, snap) => (
+                    {week.idea ? (
+                      <Draggable
+                        draggableId={week.idea.id}
+                        index={0}
+                      >
+                        {(prov, snap) => (
+                          <div
+                            className="week-slot"
+                            ref={prov.innerRef}
+                            {...prov.draggableProps}
+                            {...prov.dragHandleProps}
+                          >
                             <IdeaCard
                               idea={week.idea}
                               onFieldChange={updateField}
                               onNoteChange={updateNote}
                               onRemove={removeFromSchedule}
-                              provided={prov}
                               isDragging={snap.isDragging}
                             />
-                          )}
-                        </Draggable>
-                      ) : (
+                          </div>
+                        )}
+                      </Draggable>
+                    ) : (
+                      <div className="week-slot">
                         <div className="empty-slot">Drop an idea here</div>
-                      )}
-                      {provided.placeholder}
-                    </div>
+                      </div>
+                    )}
+                    {provided.placeholder}
                   </div>
                 )}
               </Droppable>

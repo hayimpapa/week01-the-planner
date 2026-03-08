@@ -241,3 +241,13 @@ In a new branch please, work on the following:
    Use similar colour schemes (to do is grey,
    In Progress / Draft is blue, Published is Green)
 ```
+
+### Prompt 5 — Drag & Drop Fix (again)
+
+```
+The drag and drop broke again, not working reliably.
+Please make sure I can drag & drop, independent under
+which heading (week or app or any that we may make).
+Also, as usual, add this error fixing prompt to the
+end of the readme.
+```
