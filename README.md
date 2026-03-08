@@ -5,7 +5,7 @@ A drag-and-drop weekly planner for tracking the "52 apps in 52 weeks before I tu
 ## Features
 
 - Drag and drop ideas from the backlog into any of the 52 weekly slots
-- Status tracking per idea: Backlog, Analysis, In Progress, Done
+- Three status trackers per idea: Development, LinkedIn, YouTube
 - Add new app ideas on the fly
 - Notes on each card
 - "About This Build" page template (reusable across all 52 builds)
@@ -193,4 +193,51 @@ PRE-POPULATE the fields with the Week 1 content:
   GitHub URL here"
 DESIGN: match the dark mode minimal style
 of the main planner page.
+```
+
+### Prompt 3 — Bug Fixes & Restructure
+
+```
+Can you fix a few small issues:
+1) The drag and drop only works if I drop to the Week
+   area, not to the App column (where the app says to
+   drop the idea there). Can you make sure I can drop
+   there too?
+2) The Status already shows when I select the dropdown,
+   I don't need a secondary column at the end, no
+   benefit in seeing Status twice
+3) The README has only the Prompts I used, that should
+   be only the "Appendix", the end part of it. I
+   actually would like to have a normal instructions
+   on how to install it for someone locally, how to
+   add Google analytics.
+4) And then a major problem. While this is a 52 week
+   program and on my domain I actually want to put
+   this under a week01 folder - but here it doesn't
+   make any sense. I will have 52 different Github
+   repos, not adding 51 other folders here. Can you
+   please move back everything to the main folder
+   from here and instruct me, what else do I need to
+   do to make this work?
+```
+
+### Prompt 4 — Multi-Status Tracking
+
+```
+Thank you, I merged to main.
+In a new branch please, work on the following:
+1) In the README.MD add my previous issuefixing
+   request, and also this prompt, what I am writing
+   now to be fully transparent. Hopefully this will
+   show also how my prompt-writing evolves this year
+2) I just realised that I need to track not only the
+   coding, but also the LinkedIn posting and the
+   YouTube videos as well. So I'd like to have three
+   status setting dropdown.
+   a) Development (and please add "Testing" as a new
+      status in there)
+   b) LinkedIn (just add To Do, Draft, Published)
+   c) YouTube (just add To Do, In progress, Published)
+   Use similar colour schemes (to do is grey,
+   In Progress / Draft is blue, Published is Green)
 ```
