@@ -198,6 +198,30 @@ body {
   box-shadow: 0 2px 12px rgba(108, 63, 181, 0.3);
 }
 
+.backup-buttons {
+  display: flex;
+  gap: 6px;
+  padding: 0 8px 8px;
+}
+
+.backup-btn {
+  flex: 1;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backup-btn:hover {
+  color: var(--text-secondary);
+  border-color: #444;
+  background: var(--bg-tertiary);
+}
+
 .backlog-list {
   flex: 1;
   overflow-y: auto;
@@ -399,6 +423,42 @@ body {
   color: #1a1a1a;
 }
 
+/* Progress Bar */
+.progress-bar-container {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.streak-counter {
+  color: #f59e0b;
+  font-size: 0.75rem;
+}
+
+.progress-track {
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--status-done);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  min-width: 0;
+}
+
 /* Schedule Panel */
 .schedule-panel {
   display: flex;
@@ -451,6 +511,31 @@ body {
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 4px;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.week-number:hover {
+  background: var(--bg-tertiary);
+}
+
+.week-number.wn-empty {
+  color: var(--text-muted);
+}
+
+.week-number.wn-scheduled {
+  color: var(--status-progress);
+}
+
+.week-number.wn-active {
+  color: var(--status-analysis);
+}
+
+.week-number.wn-complete {
+  color: var(--status-done);
 }
 
 .week-number.current {
@@ -484,6 +569,53 @@ body {
 .week-slot .idea-card {
   width: 100%;
   margin-bottom: 0;
+}
+
+/* Compact week card (collapsed) */
+.week-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  gap: 8px;
+}
+
+.week-compact .card-name {
+  font-size: 0.85rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-empty { background: var(--text-muted); }
+.status-dot-scheduled { background: var(--status-progress); }
+.status-dot-active { background: var(--status-analysis); }
+.status-dot-complete { background: var(--status-done); }
+
+/* Expanded week row */
+.week-row.expanded {
+  align-items: flex-start;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Tab badge (About incomplete) */
+.tab-btn {
+  position: relative;
+}
+
+.tab-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
 }
 
 /* Remove button */
