@@ -177,6 +177,25 @@ body {
   background: var(--accent-hover);
 }
 
+.generate-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.generate-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 .backlog-list {
   flex: 1;
   overflow-y: auto;
@@ -761,6 +780,55 @@ body {
 
 .dialog-remember input[type="checkbox"] {
   accent-color: var(--accent);
+}
+
+/* Generate Dialog */
+.generate-dialog {
+  text-align: center;
+}
+
+.generated-idea-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.generated-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.generated-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.dialog-actions.horizontal {
+  flex-direction: row;
+  justify-content: center;
+  gap: 12px;
+}
+
+.dialog-actions.horizontal .dialog-btn {
+  flex: 1;
+  text-align: center;
+}
+
+.dialog-btn.accept {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.dialog-btn.accept:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 /* Mobile */

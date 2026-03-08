@@ -141,6 +141,86 @@ function trackEvent(action, label) {
   }
 }
 
+const IDEA_SUBJECTS = [
+  'Coffee Shop', 'Parking Spot', 'Book Club', 'Grocery', 'Gym Workout',
+  'Weather', 'Commute', 'Meal Prep', 'Plant Care', 'Dog Walk',
+  'Habit', 'Sleep', 'Water Intake', 'Screen Time', 'Mood',
+  'Electricity Bill', 'Rental', 'Side Hustle', 'Freelance Invoice',
+  'Melbourne Event', 'Tram Route', 'Beach Day', 'Hiking Trail',
+  'Podcast', 'Movie Night', 'Board Game', 'Music Practice',
+  'Recycling', 'Wardrobe', 'Gift', 'Birthday', 'Pet Sitting',
+  'Medication', 'Allergy', 'Pollen', 'UV Index', 'Surf Report',
+  'Farmers Market', 'Food Truck', 'Street Art', 'Busking Spot',
+  'Coworking Space', 'Library', 'Study Session', 'Flashcard',
+  'Language Learning', 'Typing Speed', 'Code Snippet', 'API Status',
+  'Password', 'Wi-Fi Speed', 'Battery Health', 'Storage Cleanup',
+]
+
+const IDEA_TYPES = [
+  'Tracker', 'Finder', 'Logger', 'Scorer', 'Planner',
+  'Analyser', 'Monitor', 'Dashboard', 'Companion', 'Calculator',
+  'Timer', 'Reminder', 'Visualiser', 'Curator', 'Randomiser',
+  'Ranker', 'Diary', 'Buddy', 'Helper', 'Spotter',
+]
+
+const IDEA_DESCRIPTIONS = {
+  Tracker: (s) => `Track and log your ${s.toLowerCase()} habits over time`,
+  Finder: (s) => `Find the best ${s.toLowerCase()} options near you`,
+  Logger: (s) => `Keep a daily log of ${s.toLowerCase()} activities`,
+  Scorer: (s) => `Rate and score ${s.toLowerCase()} experiences`,
+  Planner: (s) => `Plan and organise your ${s.toLowerCase()} schedule`,
+  Analyser: (s) => `Analyse patterns in your ${s.toLowerCase()} data`,
+  Monitor: (s) => `Monitor ${s.toLowerCase()} changes in real time`,
+  Dashboard: (s) => `A personal dashboard for ${s.toLowerCase()} insights`,
+  Companion: (s) => `Your daily ${s.toLowerCase()} companion app`,
+  Calculator: (s) => `Calculate and estimate ${s.toLowerCase()} costs and stats`,
+  Timer: (s) => `Time and optimise your ${s.toLowerCase()} sessions`,
+  Reminder: (s) => `Smart reminders for ${s.toLowerCase()} tasks`,
+  Visualiser: (s) => `Visualise your ${s.toLowerCase()} data beautifully`,
+  Curator: (s) => `Curate and save the best ${s.toLowerCase()} picks`,
+  Randomiser: (s) => `Can't decide? Random ${s.toLowerCase()} picker`,
+  Ranker: (s) => `Rank and compare ${s.toLowerCase()} options`,
+  Diary: (s) => `A simple diary for ${s.toLowerCase()} notes and reflections`,
+  Buddy: (s) => `A friendly ${s.toLowerCase()} accountability buddy`,
+  Helper: (s) => `Quick help and tips for ${s.toLowerCase()}`,
+  Spotter: (s) => `Spot and alert on ${s.toLowerCase()} opportunities`,
+}
+
+function generateIdea(existingNames) {
+  const lowerExisting = existingNames.map((n) => n.toLowerCase())
+  // Try up to 20 times to avoid duplicates
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const subject = IDEA_SUBJECTS[Math.floor(Math.random() * IDEA_SUBJECTS.length)]
+    const type = IDEA_TYPES[Math.floor(Math.random() * IDEA_TYPES.length)]
+    const name = `${subject} ${type}`
+    if (lowerExisting.some((e) => e === name.toLowerCase())) continue
+    return { name, description: IDEA_DESCRIPTIONS[type](subject) }
+  }
+  return { name: 'Mystery App', description: 'A surprise app idea — you decide what it does!' }
+}
+
+function GenerateDialog({ idea, onAccept, onReject }) {
+  return (
+    <div className="dialog-overlay">
+      <div className="dialog generate-dialog">
+        <h3>Generated Idea</h3>
+        <div className="generated-idea-card">
+          <div className="generated-name">{idea.name}</div>
+          <div className="generated-desc">{idea.description}</div>
+        </div>
+        <div className="dialog-actions horizontal">
+          <button className="dialog-btn accept" onClick={onAccept}>
+            Accept
+          </button>
+          <button className="dialog-btn cancel" onClick={onReject}>
+            Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function StatusSelect({ label, value, options, classMap, onChange }) {
   return (
     <div className="status-group" onClick={(e) => e.stopPropagation()}>
@@ -242,6 +322,7 @@ export default function App() {
   const [newIdea, setNewIdea] = useState('')
   const [activeTab, setActiveTab] = useState('planner')
   const [conflict, setConflict] = useState(null)
+  const [generatedIdea, setGeneratedIdea] = useState(null)
 
   useEffect(() => {
     saveData(data)
@@ -281,6 +362,30 @@ export default function App() {
     }
     setData((prev) => ({ ...prev, backlog: [...prev.backlog, idea] }))
     setNewIdea('')
+  }
+
+  const handleGenerate = () => {
+    const allNames = [
+      ...data.backlog.map((i) => i.name),
+      ...data.schedule.filter((w) => w.idea).map((w) => w.idea.name),
+    ]
+    setGeneratedIdea(generateIdea(allNames))
+  }
+
+  const acceptGenerated = () => {
+    if (!generatedIdea) return
+    trackEvent('generate_idea', generatedIdea.name)
+    const idea = {
+      id: `idea-${Date.now()}`,
+      name: generatedIdea.name,
+      description: generatedIdea.description,
+      status: 'Backlog',
+      linkedin: 'To Do',
+      youtube: 'To Do',
+      note: '',
+    }
+    setData((prev) => ({ ...prev, backlog: [...prev.backlog, idea] }))
+    setGeneratedIdea(null)
   }
 
   const removeFromSchedule = useCallback((id) => {
@@ -512,6 +617,7 @@ export default function App() {
               onKeyDown={(e) => e.key === 'Enter' && addIdea()}
             />
             <button onClick={addIdea}>Add</button>
+            <button className="generate-btn" onClick={handleGenerate}>Generate</button>
           </div>
           <Droppable droppableId="backlog">
             {(provided) => (
@@ -598,6 +704,14 @@ export default function App() {
           </div>
         </div>
       </div>
+      )}
+
+      {generatedIdea && (
+        <GenerateDialog
+          idea={generatedIdea}
+          onAccept={acceptGenerated}
+          onReject={() => setGeneratedIdea(null)}
+        />
       )}
 
       {conflict && (

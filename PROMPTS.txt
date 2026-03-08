@@ -192,3 +192,20 @@ Great, that worked - now I'd need you to do the following:
    text file and in the README just link the prompts.
    Include this one as well at the end of that new
    prompt txt file.
+
+
+PROMPT 7 — Idea Generator
+---------------------------
+
+Awesome. Now next to the Add idea, I would like a
+generate an idea button, which should look at my
+existing ideas and based on that would generate me
+a new app idea with a title and a short description.
+It should appear in a pop-up and I could Accept or
+Reject is. If accepted, should add it to my idea list.
+If this requires Anthropic console, please let me
+know - or can it just be generated without using an
+API that may cost money. If you can't do it without
+a paying one, let me know, before implementing it.
+And of course, this prompt should be added to the
+end of the PROMPTS.TXT
