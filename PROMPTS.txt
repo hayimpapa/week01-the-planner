@@ -254,3 +254,27 @@ Please maintain the existing dark mode minimal
 design throughout.
 Please also add this prompt to the PROMPTS.TXT
 at the end.
+
+
+PROMPT 9 — Slide-in Detail Panel (Expanding Fix)
+---------------------------------------------------
+
+Remove the expand/collapse behaviour from clicking
+the W week label.
+Instead, clicking on an app card (without dragging)
+should open a slide-in detail panel from the right
+side of the screen.
+The panel should contain:
+- App name (editable)
+- Short description (editable)
+- DEV status dropdown
+- LINKEDIN status dropdown
+- YOUTUBE status dropdown
+- Notes field
+- Close button (X)
+Dragging the card should still work as before
+and should NOT trigger the panel opening.
+The week rows themselves should remain clean
+and minimal when the panel is closed.
+Please add this as a correction of the expanding
+feature to the PROMPTS.TXT (at the end).
