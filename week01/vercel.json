@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/week01/(.*)", "destination": "/week01/index.html" }
+  ]
+}
