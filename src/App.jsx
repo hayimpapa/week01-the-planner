@@ -69,6 +69,7 @@ const DEFAULT_SCHEDULE = Array.from({ length: 52 }, (_, i) => {
 })
 
 const STORAGE_KEY = '52builds-tracker-data'
+const CONFLICT_PREF_KEY = '52builds-conflict-pref'
 
 function loadData() {
   try {
@@ -80,6 +81,58 @@ function loadData() {
 
 function saveData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+function loadConflictPref() {
+  try {
+    return localStorage.getItem(CONFLICT_PREF_KEY)
+  } catch {}
+  return null
+}
+
+function saveConflictPref(pref) {
+  localStorage.setItem(CONFLICT_PREF_KEY, pref)
+}
+
+function ConflictDialog({ existingName, droppedName, onChoice }) {
+  const [remember, setRemember] = useState(false)
+
+  const choose = (choice) => {
+    if (remember) saveConflictPref(choice)
+    onChoice(choice)
+  }
+
+  return (
+    <div className="dialog-overlay">
+      <div className="dialog">
+        <h3>Week already has an idea</h3>
+        <p>
+          <strong>{droppedName}</strong> is being dropped onto a week that already has <strong>{existingName}</strong>.
+        </p>
+        <div className="dialog-actions">
+          <button className="dialog-btn overwrite" onClick={() => choose('overwrite')}>
+            Overwrite
+            <span className="dialog-btn-desc">Replace and send {existingName} to backlog</span>
+          </button>
+          <button className="dialog-btn insert" onClick={() => choose('insert')}>
+            Insert
+            <span className="dialog-btn-desc">Push {existingName} and others down one week</span>
+          </button>
+          <button className="dialog-btn cancel" onClick={() => choose('cancel')}>
+            Cancel
+          </button>
+        </div>
+        <label className="dialog-remember">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+          />
+          Remember my choice
+        </label>
+      </div>
+    </div>
+  )
 }
 
 function trackEvent(action, label) {
@@ -188,6 +241,7 @@ export default function App() {
 
   const [newIdea, setNewIdea] = useState('')
   const [activeTab, setActiveTab] = useState('planner')
+  const [conflict, setConflict] = useState(null)
 
   useEffect(() => {
     saveData(data)
@@ -243,66 +297,165 @@ export default function App() {
     })
   }, [])
 
-  const onDragEnd = (result) => {
-    const { source, destination } = result
-    if (!destination) return
-
+  const applyOverwrite = useCallback((sourceInfo, weekIdx) => {
     setData((prev) => {
       const next = {
         backlog: [...prev.backlog],
         schedule: prev.schedule.map((w) => ({ ...w })),
       }
-
-      // From backlog to schedule
-      if (
-        source.droppableId === 'backlog' &&
-        destination.droppableId.startsWith('week-')
-      ) {
-        const weekIdx = parseInt(destination.droppableId.replace('week-', ''), 10)
-        if (next.schedule[weekIdx].idea) return prev // slot occupied
-
-        const [idea] = next.backlog.splice(source.index, 1)
-        next.schedule[weekIdx] = { idea: { ...idea } }
-        trackEvent('schedule_idea', `${idea.name}:week${weekIdx + 1}`)
+      const displaced = { ...next.schedule[weekIdx].idea, status: 'Backlog' }
+      let idea
+      if (sourceInfo.from === 'backlog') {
+        const idx = next.backlog.findIndex((i) => i.id === sourceInfo.ideaId)
+        if (idx === -1) return prev
+        ;[idea] = next.backlog.splice(idx, 1)
+      } else {
+        const srcIdx = sourceInfo.weekIdx
+        idea = next.schedule[srcIdx].idea
+        next.schedule[srcIdx] = { idea: null }
       }
+      next.schedule[weekIdx] = { idea: { ...idea } }
+      next.backlog.push(displaced)
+      return next
+    })
+  }, [])
 
-      // Reorder within backlog
-      if (
-        source.droppableId === 'backlog' &&
-        destination.droppableId === 'backlog'
-      ) {
+  const applyInsert = useCallback((sourceInfo, weekIdx) => {
+    setData((prev) => {
+      const next = {
+        backlog: [...prev.backlog],
+        schedule: prev.schedule.map((w) => ({ ...w })),
+      }
+      let idea
+      if (sourceInfo.from === 'backlog') {
+        const idx = next.backlog.findIndex((i) => i.id === sourceInfo.ideaId)
+        if (idx === -1) return prev
+        ;[idea] = next.backlog.splice(idx, 1)
+      } else {
+        const srcIdx = sourceInfo.weekIdx
+        idea = next.schedule[srcIdx].idea
+        next.schedule[srcIdx] = { idea: null }
+      }
+      // Push ideas down from weekIdx
+      let overflow = { idea: { ...idea } }
+      for (let i = weekIdx; i < 52; i++) {
+        const current = next.schedule[i]
+        next.schedule[i] = overflow
+        if (!current.idea) {
+          overflow = null
+          break
+        }
+        overflow = current
+      }
+      // If week 52 was full, send the last idea to backlog
+      if (overflow?.idea) {
+        next.backlog.push({ ...overflow.idea, status: 'Backlog' })
+      }
+      return next
+    })
+  }, [])
+
+  const resolveConflict = useCallback((choice) => {
+    if (!conflict) return
+    const { sourceInfo, weekIdx } = conflict
+    setConflict(null)
+    if (choice === 'cancel') return
+    if (choice === 'overwrite') applyOverwrite(sourceInfo, weekIdx)
+    if (choice === 'insert') applyInsert(sourceInfo, weekIdx)
+  }, [conflict, applyOverwrite, applyInsert])
+
+  const onDragEnd = (result) => {
+    const { source, destination } = result
+    if (!destination) return
+
+    const srcIsBacklog = source.droppableId === 'backlog'
+    const dstIsBacklog = destination.droppableId === 'backlog'
+    const dstIsWeek = destination.droppableId.startsWith('week-')
+    const srcIsWeek = source.droppableId.startsWith('week-')
+
+    // Reorder within backlog
+    if (srcIsBacklog && dstIsBacklog) {
+      setData((prev) => {
+        const next = { ...prev, backlog: [...prev.backlog] }
         const [moved] = next.backlog.splice(source.index, 1)
         next.backlog.splice(destination.index, 0, moved)
-      }
+        return next
+      })
+      return
+    }
 
-      // Schedule to schedule (move between weeks)
-      if (
-        source.droppableId.startsWith('week-') &&
-        destination.droppableId.startsWith('week-')
-      ) {
-        const srcIdx = parseInt(source.droppableId.replace('week-', ''), 10)
-        const dstIdx = parseInt(destination.droppableId.replace('week-', ''), 10)
-        if (srcIdx === dstIdx) return prev
-        if (next.schedule[dstIdx].idea) return prev // slot occupied
-
-        next.schedule[dstIdx] = { idea: next.schedule[srcIdx].idea }
-        next.schedule[srcIdx] = { idea: null }
-        trackEvent('move_week', `week${srcIdx + 1}->week${dstIdx + 1}`)
-      }
-
-      // Schedule to backlog
-      if (
-        source.droppableId.startsWith('week-') &&
-        destination.droppableId === 'backlog'
-      ) {
-        const srcIdx = parseInt(source.droppableId.replace('week-', ''), 10)
+    // Schedule to backlog
+    if (srcIsWeek && dstIsBacklog) {
+      const srcIdx = parseInt(source.droppableId.replace('week-', ''), 10)
+      setData((prev) => {
+        const next = {
+          backlog: [...prev.backlog],
+          schedule: prev.schedule.map((w) => ({ ...w })),
+        }
         const idea = { ...next.schedule[srcIdx].idea, status: 'Backlog' }
         next.schedule[srcIdx] = { idea: null }
         next.backlog.splice(destination.index, 0, idea)
+        return next
+      })
+      return
+    }
+
+    // To schedule (from backlog or another week)
+    if (dstIsWeek) {
+      const weekIdx = parseInt(destination.droppableId.replace('week-', ''), 10)
+      let sourceInfo
+      if (srcIsBacklog) {
+        const idea = data.backlog[source.index]
+        sourceInfo = { from: 'backlog', ideaId: idea.id }
+      } else {
+        const srcIdx = parseInt(source.droppableId.replace('week-', ''), 10)
+        if (srcIdx === weekIdx) return
+        sourceInfo = { from: 'week', weekIdx: srcIdx, ideaId: data.schedule[srcIdx].idea?.id }
       }
 
-      return next
-    })
+      const slotOccupied = data.schedule[weekIdx].idea != null
+
+      if (!slotOccupied) {
+        // Empty slot — just place it
+        setData((prev) => {
+          const next = {
+            backlog: [...prev.backlog],
+            schedule: prev.schedule.map((w) => ({ ...w })),
+          }
+          let idea
+          if (sourceInfo.from === 'backlog') {
+            const idx = next.backlog.findIndex((i) => i.id === sourceInfo.ideaId)
+            if (idx === -1) return prev
+            ;[idea] = next.backlog.splice(idx, 1)
+          } else {
+            idea = next.schedule[sourceInfo.weekIdx].idea
+            next.schedule[sourceInfo.weekIdx] = { idea: null }
+          }
+          next.schedule[weekIdx] = { idea: { ...idea } }
+          trackEvent('schedule_idea', `${idea.name}:week${weekIdx + 1}`)
+          return next
+        })
+        return
+      }
+
+      // Slot is occupied — check remembered preference
+      const pref = loadConflictPref()
+      if (pref === 'overwrite') {
+        applyOverwrite(sourceInfo, weekIdx)
+      } else if (pref === 'insert') {
+        applyInsert(sourceInfo, weekIdx)
+      } else {
+        // Show conflict dialog
+        setConflict({
+          sourceInfo,
+          weekIdx,
+          existingName: data.schedule[weekIdx].idea.name,
+          droppedName: sourceInfo.from === 'backlog'
+            ? data.backlog.find((i) => i.id === sourceInfo.ideaId)?.name
+            : data.schedule[sourceInfo.weekIdx].idea?.name,
+        })
+      }
+    }
   }
 
   const scheduledCount = data.schedule.filter((w) => w.idea).length
@@ -445,6 +598,14 @@ export default function App() {
           </div>
         </div>
       </div>
+      )}
+
+      {conflict && (
+        <ConflictDialog
+          existingName={conflict.existingName}
+          droppedName={conflict.droppedName}
+          onChoice={resolveConflict}
+        />
       )}
     </DragDropContext>
   )
