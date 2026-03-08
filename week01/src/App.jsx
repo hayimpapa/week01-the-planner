@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import ReactGA from 'react-ga4'
+import AboutPage from './AboutPage.jsx'
 
 const STATUSES = ['Backlog', 'Analysis', 'In Progress', 'Done']
 
@@ -138,6 +139,7 @@ export default function App() {
   })
 
   const [newIdea, setNewIdea] = useState('')
+  const [activeTab, setActiveTab] = useState('planner')
 
   useEffect(() => {
     saveData(data)
@@ -267,11 +269,30 @@ export default function App() {
             52 apps in 52 weeks before I turn 52 — Hey I'm Papa
           </div>
         </div>
-        <div className="header-subtitle">
-          {scheduledCount}/52 scheduled · {doneCount} done · {data.backlog.length} in backlog
+        <div className="header-right">
+          <div className="tab-nav">
+            <button
+              className={`tab-btn${activeTab === 'planner' ? ' active' : ''}`}
+              onClick={() => setActiveTab('planner')}
+            >
+              Planner
+            </button>
+            <button
+              className={`tab-btn${activeTab === 'about' ? ' active' : ''}`}
+              onClick={() => setActiveTab('about')}
+            >
+              About This Build
+            </button>
+          </div>
+          <div className="header-subtitle">
+            {scheduledCount}/52 scheduled · {doneCount} done · {data.backlog.length} in backlog
+          </div>
         </div>
       </div>
 
+      {activeTab === 'about' ? (
+        <AboutPage />
+      ) : (
       <div className="app-layout">
         {/* Backlog Panel */}
         <div className="backlog-panel">
@@ -378,6 +399,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      )}
     </DragDropContext>
   )
 }
