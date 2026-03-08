@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import ReactGA from 'react-ga4'
 import AboutPage from './AboutPage.jsx'
@@ -241,21 +241,12 @@ function StatusSelect({ label, value, options, classMap, onChange }) {
   )
 }
 
-function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, provided, isDragging }) {
+function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, isDragging, isSelected }) {
   const [showNote, setShowNote] = useState(!!idea.note)
-
-  const dragProps = provided
-    ? {
-        ref: provided.innerRef,
-        ...provided.draggableProps,
-        ...provided.dragHandleProps,
-      }
-    : {}
 
   return (
     <div
-      className={`idea-card${isDragging ? ' dragging' : ''}`}
-      {...dragProps}
+      className={`idea-card${isDragging ? ' dragging' : ''}${isSelected ? ' selected' : ''}`}
     >
       <div className="card-header">
         <span className="card-name">{idea.name}</span>
@@ -313,6 +304,69 @@ function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, provided, isDra
   )
 }
 
+function DetailPanel({ idea, onFieldChange, onNoteChange, onClose }) {
+  return (
+    <div className="detail-panel">
+      <div className="detail-panel-header">
+        <h3>Idea Details</h3>
+        <button className="detail-close-btn" onClick={onClose}>×</button>
+      </div>
+      <div className="detail-panel-body">
+        <label className="detail-label">App Name</label>
+        <input
+          className="detail-input"
+          type="text"
+          value={idea.name}
+          onChange={(e) => onFieldChange(idea.id, 'name', e.target.value)}
+        />
+
+        <label className="detail-label">Description</label>
+        <input
+          className="detail-input"
+          type="text"
+          value={idea.description || ''}
+          onChange={(e) => onFieldChange(idea.id, 'description', e.target.value)}
+        />
+
+        <label className="detail-label">Dev Status</label>
+        <select
+          className={`detail-select status-select ${DEV_STATUS_CLASS[idea.status] || ''}`}
+          value={idea.status}
+          onChange={(e) => onFieldChange(idea.id, 'status', e.target.value)}
+        >
+          {DEV_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+
+        <label className="detail-label">LinkedIn</label>
+        <select
+          className={`detail-select status-select ${CONTENT_STATUS_CLASS[idea.linkedin] || ''}`}
+          value={idea.linkedin || 'To Do'}
+          onChange={(e) => onFieldChange(idea.id, 'linkedin', e.target.value)}
+        >
+          {LINKEDIN_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+
+        <label className="detail-label">YouTube</label>
+        <select
+          className={`detail-select status-select ${CONTENT_STATUS_CLASS[idea.youtube] || ''}`}
+          value={idea.youtube || 'To Do'}
+          onChange={(e) => onFieldChange(idea.id, 'youtube', e.target.value)}
+        >
+          {YOUTUBE_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+
+        <label className="detail-label">Notes</label>
+        <textarea
+          className="detail-textarea"
+          placeholder="Add a note..."
+          value={idea.note || ''}
+          onChange={(e) => onNoteChange(idea.id, e.target.value)}
+        />
+      </div>
+    </div>
+  )
+}
+
 const ABOUT_STORAGE_KEY = '52builds-about-data'
 
 function getWeekStatus(idea) {
@@ -356,13 +410,38 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('planner')
   const [conflict, setConflict] = useState(null)
   const [generatedIdea, setGeneratedIdea] = useState(null)
-  const [expandedWeek, setExpandedWeek] = useState(null)
+  const [selectedIdeaId, setSelectedIdeaId] = useState(null)
   const [aboutIncomplete, setAboutIncomplete] = useState(checkAboutIncomplete)
+  const mouseDownPos = useRef(null)
 
   // Re-check about completeness when switching back to planner
   useEffect(() => {
     if (activeTab === 'planner') setAboutIncomplete(checkAboutIncomplete())
   }, [activeTab])
+
+  const handleCardMouseDown = useCallback((e) => {
+    mouseDownPos.current = { x: e.clientX, y: e.clientY }
+  }, [])
+
+  const handleCardClick = useCallback((ideaId, e) => {
+    if (!mouseDownPos.current) return
+    const dx = Math.abs(e.clientX - mouseDownPos.current.x)
+    const dy = Math.abs(e.clientY - mouseDownPos.current.y)
+    mouseDownPos.current = null
+    // Only open panel if mouse barely moved (not a drag)
+    if (dx < 5 && dy < 5) {
+      // Don't open if clicking on interactive elements
+      const tag = e.target.tagName.toLowerCase()
+      if (tag === 'select' || tag === 'option' || tag === 'button' || tag === 'textarea' || tag === 'input') return
+      setSelectedIdeaId((prev) => prev === ideaId ? null : ideaId)
+    }
+  }, [])
+
+  // Find the selected idea object
+  const selectedIdea = selectedIdeaId
+    ? data.backlog.find((i) => i.id === selectedIdeaId)
+      || data.schedule.find((w) => w.idea?.id === selectedIdeaId)?.idea
+    : null
 
   useEffect(() => {
     saveData(data)
@@ -708,13 +787,21 @@ export default function App() {
                 {data.backlog.map((idea, index) => (
                   <Draggable key={idea.id} draggableId={idea.id} index={index}>
                     {(prov, snapshot) => (
-                      <IdeaCard
-                        idea={idea}
-                        onFieldChange={updateField}
-                        onNoteChange={updateNote}
-                        provided={prov}
-                        isDragging={snapshot.isDragging}
-                      />
+                      <div
+                        ref={prov.innerRef}
+                        {...prov.draggableProps}
+                        {...prov.dragHandleProps}
+                        onMouseDown={handleCardMouseDown}
+                        onClick={(e) => handleCardClick(idea.id, e)}
+                      >
+                        <IdeaCard
+                          idea={idea}
+                          onFieldChange={updateField}
+                          onNoteChange={updateNote}
+                          isDragging={snapshot.isDragging}
+                          isSelected={selectedIdeaId === idea.id}
+                        />
+                      </div>
                     )}
                   </Draggable>
                 ))}
@@ -743,20 +830,18 @@ export default function App() {
           <div className="schedule-list">
             {data.schedule.map((week, index) => {
               const weekStatus = getWeekStatus(week.idea)
-              const isExpanded = expandedWeek === index
               return (
               <Droppable key={index} droppableId={`week-${index}`} direction="horizontal">
                 {(provided, snapshot) => (
                   <div
                     className={`week-row${index === 0 ? ' current-week' : ''}${
                       snapshot.isDraggingOver ? ' drag-over' : ''
-                    }${isExpanded ? ' expanded' : ''}`}
+                    }`}
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                   >
                     <span
                       className={`week-number wn-${weekStatus}${index === 0 ? ' current' : ''}`}
-                      onClick={() => setExpandedWeek(isExpanded ? null : index)}
                     >
                       W{index + 1}
                     </span>
@@ -772,21 +857,13 @@ export default function App() {
                             ref={prov.innerRef}
                             {...prov.draggableProps}
                             {...prov.dragHandleProps}
+                            onMouseDown={handleCardMouseDown}
+                            onClick={(e) => handleCardClick(week.idea.id, e)}
                           >
-                            {isExpanded ? (
-                              <IdeaCard
-                                idea={week.idea}
-                                onFieldChange={updateField}
-                                onNoteChange={updateNote}
-                                onRemove={removeFromSchedule}
-                                isDragging={snap.isDragging}
-                              />
-                            ) : (
-                              <div className={`week-compact idea-card${snap.isDragging ? ' dragging' : ''}`}>
-                                <span className="card-name">{week.idea.name}</span>
-                                <span className={`status-dot status-dot-${weekStatus}`} />
-                              </div>
-                            )}
+                            <div className={`week-compact idea-card${snap.isDragging ? ' dragging' : ''}${selectedIdeaId === week.idea.id ? ' selected' : ''}`}>
+                              <span className="card-name">{week.idea.name}</span>
+                              <span className={`status-dot status-dot-${weekStatus}`} />
+                            </div>
                           </div>
                         )}
                       </Draggable>
@@ -804,6 +881,18 @@ export default function App() {
           </div>
         </div>
       </div>
+      )}
+
+      {selectedIdea && (
+        <>
+          <div className="detail-overlay" onClick={() => setSelectedIdeaId(null)} />
+          <DetailPanel
+            idea={selectedIdea}
+            onFieldChange={updateField}
+            onNoteChange={updateNote}
+            onClose={() => setSelectedIdeaId(null)}
+          />
+        </>
       )}
 
       {generatedIdea && (
