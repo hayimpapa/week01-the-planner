@@ -313,6 +313,39 @@ function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, provided, isDra
   )
 }
 
+const ABOUT_STORAGE_KEY = '52builds-about-data'
+
+function getWeekStatus(idea) {
+  if (!idea) return 'empty'
+  const devDone = idea.status === 'Done'
+  const linkedinDone = idea.linkedin === 'Published'
+  const youtubeDone = idea.youtube === 'Published'
+  if (devDone && linkedinDone && youtubeDone) return 'complete'
+  const inProgress = idea.status === 'In Progress' || idea.status === 'Analysis' || idea.status === 'Testing'
+    || idea.linkedin === 'Draft' || idea.linkedin === 'Published'
+    || idea.youtube === 'In Progress' || idea.youtube === 'Published'
+  if (inProgress) return 'active'
+  return 'scheduled'
+}
+
+function computeStreak(schedule) {
+  let streak = 0
+  for (let i = 0; i < 52; i++) {
+    if (getWeekStatus(schedule[i].idea) === 'complete') streak++
+    else break
+  }
+  return streak
+}
+
+function checkAboutIncomplete() {
+  try {
+    const saved = localStorage.getItem(ABOUT_STORAGE_KEY)
+    const data = saved ? JSON.parse(saved) : {}
+    const fields = ['problem', 'approach', 'prompt', 'build', 'differently', 'github']
+    return fields.some((f) => !data[f] || data[f] === 'paste your GitHub URL here')
+  } catch { return true }
+}
+
 export default function App() {
   const [data, setData] = useState(() => {
     const saved = loadData()
@@ -323,6 +356,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('planner')
   const [conflict, setConflict] = useState(null)
   const [generatedIdea, setGeneratedIdea] = useState(null)
+  const [expandedWeek, setExpandedWeek] = useState(null)
+  const [aboutIncomplete, setAboutIncomplete] = useState(checkAboutIncomplete)
+
+  // Re-check about completeness when switching back to planner
+  useEffect(() => {
+    if (activeTab === 'planner') setAboutIncomplete(checkAboutIncomplete())
+  }, [activeTab])
 
   useEffect(() => {
     saveData(data)
@@ -386,6 +426,37 @@ export default function App() {
     }
     setData((prev) => ({ ...prev, backlog: [...prev.backlog, idea] }))
     setGeneratedIdea(null)
+  }
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `52builds-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const importData = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        try {
+          const imported = JSON.parse(ev.target.result)
+          if (imported.backlog && imported.schedule) {
+            setData(imported)
+          }
+        } catch {}
+      }
+      reader.readAsText(file)
+    }
+    input.click()
   }
 
   const removeFromSchedule = useCallback((id) => {
@@ -564,7 +635,8 @@ export default function App() {
   }
 
   const scheduledCount = data.schedule.filter((w) => w.idea).length
-  const doneCount = data.schedule.filter((w) => w.idea?.status === 'Done').length
+  const doneCount = data.schedule.filter((w) => getWeekStatus(w.idea) === 'complete').length
+  const streak = computeStreak(data.schedule)
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -590,6 +662,7 @@ export default function App() {
               onClick={() => setActiveTab('about')}
             >
               About This Build
+              {aboutIncomplete && <span className="tab-badge" />}
             </button>
           </div>
           <div className="header-subtitle">
@@ -621,6 +694,10 @@ export default function App() {
           <button className="generate-btn" onClick={handleGenerate}>
             Generate AI Idea
           </button>
+          <div className="backup-buttons">
+            <button className="backup-btn" onClick={exportData}>Export Backup</button>
+            <button className="backup-btn" onClick={importData}>Import Backup</button>
+          </div>
           <Droppable droppableId="backlog">
             {(provided) => (
               <div
@@ -649,24 +726,37 @@ export default function App() {
 
         {/* Schedule Panel */}
         <div className="schedule-panel">
+          <div className="progress-bar-container">
+            <div className="progress-info">
+              <span>{doneCount}/52 complete</span>
+              {streak > 0 && <span className="streak-counter">{'\uD83D\uDD25'} {streak} week streak</span>}
+            </div>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: `${(doneCount / 52) * 100}%` }} />
+            </div>
+          </div>
           <div className="schedule-header">
             <span>Week</span>
             <span>Dates</span>
             <span>App</span>
           </div>
           <div className="schedule-list">
-            {data.schedule.map((week, index) => (
+            {data.schedule.map((week, index) => {
+              const weekStatus = getWeekStatus(week.idea)
+              const isExpanded = expandedWeek === index
+              return (
               <Droppable key={index} droppableId={`week-${index}`} direction="horizontal">
                 {(provided, snapshot) => (
                   <div
                     className={`week-row${index === 0 ? ' current-week' : ''}${
                       snapshot.isDraggingOver ? ' drag-over' : ''
-                    }`}
+                    }${isExpanded ? ' expanded' : ''}`}
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                   >
                     <span
-                      className={`week-number${index === 0 ? ' current' : ''}`}
+                      className={`week-number wn-${weekStatus}${index === 0 ? ' current' : ''}`}
+                      onClick={() => setExpandedWeek(isExpanded ? null : index)}
                     >
                       W{index + 1}
                     </span>
@@ -683,13 +773,20 @@ export default function App() {
                             {...prov.draggableProps}
                             {...prov.dragHandleProps}
                           >
-                            <IdeaCard
-                              idea={week.idea}
-                              onFieldChange={updateField}
-                              onNoteChange={updateNote}
-                              onRemove={removeFromSchedule}
-                              isDragging={snap.isDragging}
-                            />
+                            {isExpanded ? (
+                              <IdeaCard
+                                idea={week.idea}
+                                onFieldChange={updateField}
+                                onNoteChange={updateNote}
+                                onRemove={removeFromSchedule}
+                                isDragging={snap.isDragging}
+                              />
+                            ) : (
+                              <div className={`week-compact idea-card${snap.isDragging ? ' dragging' : ''}`}>
+                                <span className="card-name">{week.idea.name}</span>
+                                <span className={`status-dot status-dot-${weekStatus}`} />
+                              </div>
+                            )}
                           </div>
                         )}
                       </Draggable>
@@ -702,7 +799,8 @@ export default function App() {
                   </div>
                 )}
               </Droppable>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>

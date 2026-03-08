@@ -209,3 +209,48 @@ API that may cost money. If you can't do it without
 a paying one, let me know, before implementing it.
 And of course, this prompt should be added to the
 end of the PROMPTS.TXT
+
+
+PROMPT 8 — UI Polish & Data Safety
+-------------------------------------
+
+Please make the following improvements to the
+52 Builds Tracker app:
+1. EXPANDED WEEK ROW
+When clicking on a week row, expand it to show
+more detail about that build. Collapse on
+second click.
+2. PROGRESS BAR
+Add a visual progress bar at the top of the
+scheduler panel showing "X/52 complete" - fills
+as more weeks are marked Done.
+3. WEEK NUMBER COLOUR CODING
+The week label (W1, W2 etc) should change colour
+based on overall status:
+- Grey = empty
+- Yellow = any item In Progress or Analysis
+- Green = all three tracks (DEV, LINKEDIN,
+  YOUTUBE) are Done
+- Blue = default/scheduled but not started
+4. STREAK COUNTER
+Add a streak counter near the progress bar
+showing how many consecutive weeks have been
+fully completed. Label it "fire X week streak"
+5. EXPORT / IMPORT BACKUP
+Add two small buttons somewhere unobtrusive
+(e.g. bottom of sidebar or top corner):
+- "Export" - downloads all app data as a
+  JSON file to the user's computer
+- "Import" - lets user upload a previously
+  exported JSON file to restore their data
+This is critical as all data is in localStorage
+and could be lost.
+6. ABOUT THIS BUILD REMINDER
+On the Planner view, add a small subtle reminder
+badge or indicator on the "About This Build" tab
+when any of its fields are still empty - so I
+never forget to fill it in before posting.
+Please maintain the existing dark mode minimal
+design throughout.
+Please also add this prompt to the PROMPTS.TXT
+at the end.
