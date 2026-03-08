@@ -342,7 +342,6 @@ export default function App() {
             <span>Week</span>
             <span>Dates</span>
             <span>App</span>
-            <span>Status</span>
           </div>
           <div className="schedule-list">
             {data.schedule.map((week, index) => (
@@ -379,18 +378,9 @@ export default function App() {
                           )}
                         </Draggable>
                       ) : (
-                        <div className="week-slot empty">Drop an idea here</div>
+                        <div className="empty-slot">Drop an idea here</div>
                       )}
                       {provided.placeholder}
-                    </div>
-                    <div className="week-status">
-                      {week.idea && (
-                        <span
-                          className={`status-badge ${STATUS_CLASS[week.idea.status]}`}
-                        >
-                          {week.idea.status}
-                        </span>
-                      )}
                     </div>
                   </div>
                 )}

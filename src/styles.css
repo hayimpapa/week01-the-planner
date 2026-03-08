@@ -341,7 +341,7 @@ body {
 
 .schedule-header {
   display: grid;
-  grid-template-columns: 70px 140px 1fr 100px;
+  grid-template-columns: 70px 140px 1fr;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   font-weight: 600;
@@ -358,7 +358,7 @@ body {
 
 .week-row {
   display: grid;
-  grid-template-columns: 70px 140px 1fr 100px;
+  grid-template-columns: 70px 140px 1fr;
   align-items: center;
   padding: 6px 16px;
   border-bottom: 1px solid var(--border);
@@ -403,21 +403,20 @@ body {
   padding: 4px;
 }
 
-.week-slot.empty {
+.empty-slot {
   border: 1px dashed var(--border);
   color: var(--text-muted);
   font-size: 0.75rem;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  min-height: 40px;
+  border-radius: 6px;
 }
 
 .week-slot .idea-card {
   width: 100%;
   margin-bottom: 0;
-}
-
-.week-status {
-  display: flex;
-  justify-content: center;
 }
 
 /* Remove button */
@@ -638,7 +637,7 @@ body {
 
   .schedule-header,
   .week-row {
-    grid-template-columns: 50px 100px 1fr 80px;
+    grid-template-columns: 50px 100px 1fr;
     padding: 6px 10px;
   }
 
