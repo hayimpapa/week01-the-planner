@@ -218,20 +218,20 @@ function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, onDelete, isDra
     <div
       className={`idea-card${isDragging ? ' dragging' : ''}${isSelected ? ' selected' : ''}`}
     >
+      {onDelete && (
+        <button
+          className="delete-btn"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete(idea.id)
+          }}
+          title="Delete idea"
+        >
+          🗑
+        </button>
+      )}
       <div className="card-header">
         <span className="card-name">{idea.name}</span>
-        {onDelete && (
-          <button
-            className="delete-btn"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete(idea.id)
-            }}
-            title="Delete idea"
-          >
-            🗑
-          </button>
-        )}
         {onRemove && (
           <button
             className="remove-btn"
