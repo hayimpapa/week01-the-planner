@@ -3,9 +3,9 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import ReactGA from 'react-ga4'
 import AboutPage from './AboutPage.jsx'
 
-const DEV_STATUSES = ['Backlog', 'Analysis', 'In Progress', 'Testing', 'Done']
-const LINKEDIN_STATUSES = ['To Do', 'Draft', 'Published']
-const YOUTUBE_STATUSES = ['To Do', 'In Progress', 'Published']
+const DEV_STATUSES = ['Backlog', 'Analysis', 'In Progress', 'Testing', 'Done', 'Cancelled']
+const LINKEDIN_STATUSES = ['To Do', 'Draft', 'Published', 'Cancelled']
+const YOUTUBE_STATUSES = ['To Do', 'In Progress', 'Published', 'Cancelled']
 
 const DEV_STATUS_CLASS = {
   Backlog: 'backlog',
@@ -13,6 +13,7 @@ const DEV_STATUS_CLASS = {
   'In Progress': 'in-progress',
   Testing: 'testing',
   Done: 'done',
+  Cancelled: 'cancelled',
 }
 
 const CONTENT_STATUS_CLASS = {
@@ -20,6 +21,7 @@ const CONTENT_STATUS_CLASS = {
   Draft: 'draft',
   'In Progress': 'in-progress',
   Published: 'published',
+  Cancelled: 'cancelled',
 }
 
 function getWeekDates(weekIndex) {
@@ -209,7 +211,7 @@ function StatusSelect({ label, value, options, classMap, onChange }) {
   )
 }
 
-function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, isDragging, isSelected }) {
+function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, onDelete, isDragging, isSelected }) {
   const [showNote, setShowNote] = useState(!!idea.note)
 
   return (
@@ -218,6 +220,18 @@ function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, isDragging, isS
     >
       <div className="card-header">
         <span className="card-name">{idea.name}</span>
+        {onDelete && (
+          <button
+            className="delete-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(idea.id)
+            }}
+            title="Delete idea"
+          >
+            🗑
+          </button>
+        )}
         {onRemove && (
           <button
             className="remove-btn"
@@ -450,6 +464,14 @@ export default function App() {
     setData((prev) => ({ ...prev, backlog: [...prev.backlog, idea] }))
     setNewIdea('')
   }
+
+  const deleteIdea = useCallback((id) => {
+    if (selectedIdeaId === id) setSelectedIdeaId(null)
+    setData((prev) => ({
+      ...prev,
+      backlog: prev.backlog.filter((i) => i.id !== id),
+    }))
+  }, [selectedIdeaId])
 
   const handleGenerate = () => {
     const allNames = [
@@ -766,6 +788,7 @@ export default function App() {
                           idea={idea}
                           onFieldChange={updateField}
                           onNoteChange={updateNote}
+                          onDelete={deleteIdea}
                           isDragging={snapshot.isDragging}
                           isSelected={selectedIdeaId === idea.id}
                         />
