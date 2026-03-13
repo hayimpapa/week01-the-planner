@@ -227,7 +227,7 @@ function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, onDelete, isDra
           }}
           title="Delete idea"
         >
-          🗑
+          🗑️
         </button>
       )}
       <div className="card-header">
