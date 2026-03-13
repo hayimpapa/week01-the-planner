@@ -298,3 +298,23 @@ from scratch. localStorage will save
 their personal data as before.
 Do not change anything else.
 And please add this at the end of PROMPTS.TXT
+
+
+PROMPT 11 — Base Path Fix for Subfolder Deploy
+-------------------------------------------------
+
+The app is deployed to a subfolder /week01
+on the main domain, not the root /.
+This means all built asset paths are
+incorrect - CSS and JS files return 404
+because Vite is building paths from /
+instead of /week01/.
+Please update vite.config.js or
+vite.config.ts to add the base path:
+export default defineConfig({
+  base: '/week01/',
+  // rest of existing config unchanged
+})
+Then rebuild the app. This should fix
+all 404 errors on CSS and JS assets
+when deployed to 52-app.com/week01
