@@ -318,3 +318,12 @@ export default defineConfig({
 Then rebuild the app. This should fix
 all 404 errors on CSS and JS assets
 when deployed to 52-app.com/week01
+
+
+PROMPT 12 — Cancelled Status & Delete from Backlog
+-----------------------------------------------------
+
+Can you please add a Cancelled to all of the
+different statuses.
+And can you add a delete (trash) icon to the
+cards in the Backlog only, so I can remove ideas.
