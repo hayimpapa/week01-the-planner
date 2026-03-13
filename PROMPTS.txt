@@ -278,3 +278,23 @@ The week rows themselves should remain clean
 and minimal when the panel is closed.
 Please add this as a correction of the expanding
 feature to the PROMPTS.TXT (at the end).
+
+
+PROMPT 10 — Clear Default Data
+---------------------------------
+
+Please make one small update to the
+52 Builds Tracker app (week01):
+In the initial data setup, remove all
+pre-populated idea cards from the
+Ideas Backlog.
+The app should launch with zero ideas
+in the backlog by default.
+The weekly schedule should also start
+empty - remove any pre-assigned apps
+from Week 1, Week 2 and Week 3.
+Visitors will add their own ideas
+from scratch. localStorage will save
+their personal data as before.
+Do not change anything else.
+And please add this at the end of PROMPTS.TXT
