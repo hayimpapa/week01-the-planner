@@ -32,41 +32,9 @@ function getWeekDates(weekIndex) {
   return `${fmt(start)} – ${fmt(end)}`
 }
 
-const DEFAULT_BACKLOG = [
-  { id: 'idea-1', name: 'Portfolio Tracker', description: 'Track investment portfolio performance', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
-  { id: 'idea-2', name: 'Receipt Analyser', description: 'Scan and categorise receipts with OCR', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
-  { id: 'idea-3', name: 'Melbourne Suburb Scorer', description: 'Rate and compare Melbourne suburbs', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
-  { id: 'idea-4', name: 'Flight Deal Watcher', description: 'Monitor and alert on cheap flight deals', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
-  { id: 'idea-5', name: 'Cat Health Log', description: 'Track cat health records and vet visits', status: 'Backlog', linkedin: 'To Do', youtube: 'To Do', note: '' },
-]
+const DEFAULT_BACKLOG = []
 
-const DEFAULT_SCHEDULE = Array.from({ length: 52 }, (_, i) => {
-  if (i === 0)
-    return {
-      idea: {
-        id: 'idea-planner',
-        name: 'The Planner',
-        description: 'This app — 52 Builds Tracker',
-        status: 'In Progress',
-        linkedin: 'To Do',
-        youtube: 'To Do',
-        note: '',
-      },
-    }
-  if (i === 1)
-    return {
-      idea: {
-        id: 'idea-flappy',
-        name: 'Flappy Tram',
-        description: 'Flappy Bird clone with Melbourne trams',
-        status: 'Analysis',
-        linkedin: 'To Do',
-        youtube: 'To Do',
-        note: '',
-      },
-    }
-  return { idea: null }
-})
+const DEFAULT_SCHEDULE = Array.from({ length: 52 }, () => ({ idea: null }))
 
 const STORAGE_KEY = '52builds-tracker-data'
 const CONFLICT_PREF_KEY = '52builds-conflict-pref'
