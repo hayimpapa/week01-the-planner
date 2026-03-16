@@ -4,8 +4,6 @@ import ReactGA from 'react-ga4'
 import AboutPage from './AboutPage.jsx'
 
 const DEV_STATUSES = ['Backlog', 'Analysis', 'In Progress', 'Testing', 'Done', 'Cancelled']
-const LINKEDIN_STATUSES = ['To Do', 'Draft', 'Published', 'Cancelled']
-const YOUTUBE_STATUSES = ['To Do', 'In Progress', 'Published', 'Cancelled']
 
 const DEV_STATUS_CLASS = {
   Backlog: 'backlog',
@@ -16,13 +14,6 @@ const DEV_STATUS_CLASS = {
   Cancelled: 'cancelled',
 }
 
-const CONTENT_STATUS_CLASS = {
-  'To Do': 'todo',
-  Draft: 'draft',
-  'In Progress': 'in-progress',
-  Published: 'published',
-  Cancelled: 'cancelled',
-}
 
 function getWeekDates(weekIndex) {
   const start = new Date(2026, 2, 8) // March 8, 2026 — today
@@ -254,20 +245,6 @@ function IdeaCard({ idea, onFieldChange, onNoteChange, onRemove, onDelete, isDra
           classMap={DEV_STATUS_CLASS}
           onChange={(v) => onFieldChange(idea.id, 'status', v)}
         />
-        <StatusSelect
-          label="LinkedIn"
-          value={idea.linkedin || 'To Do'}
-          options={LINKEDIN_STATUSES}
-          classMap={CONTENT_STATUS_CLASS}
-          onChange={(v) => onFieldChange(idea.id, 'linkedin', v)}
-        />
-        <StatusSelect
-          label="YouTube"
-          value={idea.youtube || 'To Do'}
-          options={YOUTUBE_STATUSES}
-          classMap={CONTENT_STATUS_CLASS}
-          onChange={(v) => onFieldChange(idea.id, 'youtube', v)}
-        />
       </div>
       <button className="note-toggle" onClick={() => setShowNote(!showNote)}>
         {showNote ? 'hide note' : '+ note'}
@@ -319,24 +296,6 @@ function DetailPanel({ idea, onFieldChange, onNoteChange, onClose }) {
           {DEV_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
 
-        <label className="detail-label">LinkedIn</label>
-        <select
-          className={`detail-select status-select ${CONTENT_STATUS_CLASS[idea.linkedin] || ''}`}
-          value={idea.linkedin || 'To Do'}
-          onChange={(e) => onFieldChange(idea.id, 'linkedin', e.target.value)}
-        >
-          {LINKEDIN_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-
-        <label className="detail-label">YouTube</label>
-        <select
-          className={`detail-select status-select ${CONTENT_STATUS_CLASS[idea.youtube] || ''}`}
-          value={idea.youtube || 'To Do'}
-          onChange={(e) => onFieldChange(idea.id, 'youtube', e.target.value)}
-        >
-          {YOUTUBE_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-
         <label className="detail-label">Notes</label>
         <textarea
           className="detail-textarea"
@@ -353,14 +312,8 @@ const ABOUT_STORAGE_KEY = '52builds-about-data'
 
 function getWeekStatus(idea) {
   if (!idea) return 'empty'
-  const devDone = idea.status === 'Done'
-  const linkedinDone = idea.linkedin === 'Published'
-  const youtubeDone = idea.youtube === 'Published'
-  if (devDone && linkedinDone && youtubeDone) return 'complete'
-  const inProgress = idea.status === 'In Progress' || idea.status === 'Analysis' || idea.status === 'Testing'
-    || idea.linkedin === 'Draft' || idea.linkedin === 'Published'
-    || idea.youtube === 'In Progress' || idea.youtube === 'Published'
-  if (inProgress) return 'active'
+  if (idea.status === 'Done') return 'complete'
+  if (idea.status === 'In Progress' || idea.status === 'Analysis' || idea.status === 'Testing') return 'active'
   return 'scheduled'
 }
 
@@ -457,8 +410,6 @@ export default function App() {
       name,
       description: '',
       status: 'Backlog',
-      linkedin: 'To Do',
-      youtube: 'To Do',
       note: '',
     }
     setData((prev) => ({ ...prev, backlog: [...prev.backlog, idea] }))
@@ -489,8 +440,6 @@ export default function App() {
       name: generatedIdea.name,
       description: generatedIdea.description,
       status: 'Backlog',
-      linkedin: 'To Do',
-      youtube: 'To Do',
       note: '',
     }
     setData((prev) => ({ ...prev, backlog: [...prev.backlog, idea] }))
@@ -853,7 +802,7 @@ export default function App() {
                           >
                             <div className={`week-compact idea-card${snap.isDragging ? ' dragging' : ''}${selectedIdeaId === week.idea.id ? ' selected' : ''}`}>
                               <span className="card-name">{week.idea.name}</span>
-                              <span className={`status-dot status-dot-${weekStatus}`} />
+                              <span className={`status-badge status-select ${DEV_STATUS_CLASS[week.idea.status] || ''}`}>{week.idea.status}</span>
                             </div>
                           </div>
                         )}
