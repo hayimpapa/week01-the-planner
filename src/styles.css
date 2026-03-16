@@ -583,17 +583,6 @@ body {
   font-size: 0.85rem;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-dot-empty { background: var(--text-muted); }
-.status-dot-scheduled { background: var(--status-progress); }
-.status-dot-active { background: var(--status-analysis); }
-.status-dot-complete { background: var(--status-done); }
 
 /* Selected card highlight */
 .idea-card.selected,
