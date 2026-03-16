@@ -661,6 +661,9 @@ export default function App() {
       <div className="header">
         <div>
           <h1>
+            <a href="https://52-app.com/" className="home-logo-link" title="Go to 52 App Home">
+              <img src="https://raw.githubusercontent.com/hayimpapa/week00-main-page/main/public/w52.png" alt="52 App Home" className="home-logo" />
+            </a>
             <span>52</span> Builds Tracker
           </h1>
           <div className="header-subtitle">
