@@ -308,8 +308,6 @@ function DetailPanel({ idea, onFieldChange, onNoteChange, onClose }) {
   )
 }
 
-const ABOUT_STORAGE_KEY = '52builds-about-data'
-
 function getWeekStatus(idea) {
   if (!idea) return 'empty'
   if (idea.status === 'Done') return 'complete'
@@ -326,15 +324,6 @@ function computeStreak(schedule) {
   return streak
 }
 
-function checkAboutIncomplete() {
-  try {
-    const saved = localStorage.getItem(ABOUT_STORAGE_KEY)
-    const data = saved ? JSON.parse(saved) : {}
-    const fields = ['problem', 'approach', 'prompt', 'build', 'differently', 'github']
-    return fields.some((f) => !data[f] || data[f] === 'paste your GitHub URL here')
-  } catch { return true }
-}
-
 export default function App() {
   const [data, setData] = useState(() => {
     const saved = loadData()
@@ -346,13 +335,7 @@ export default function App() {
   const [conflict, setConflict] = useState(null)
   const [generatedIdea, setGeneratedIdea] = useState(null)
   const [selectedIdeaId, setSelectedIdeaId] = useState(null)
-  const [aboutIncomplete, setAboutIncomplete] = useState(checkAboutIncomplete)
   const mouseDownPos = useRef(null)
-
-  // Re-check about completeness when switching back to planner
-  useEffect(() => {
-    if (activeTab === 'planner') setAboutIncomplete(checkAboutIncomplete())
-  }, [activeTab])
 
   const handleCardMouseDown = useCallback((e) => {
     mouseDownPos.current = { x: e.clientX, y: e.clientY }
@@ -683,7 +666,6 @@ export default function App() {
               onClick={() => setActiveTab('about')}
             >
               About This Build
-              {aboutIncomplete && <span className="tab-badge" />}
             </button>
           </div>
           <div className="header-subtitle">
