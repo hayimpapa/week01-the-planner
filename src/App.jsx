@@ -15,8 +15,33 @@ const DEV_STATUS_CLASS = {
 }
 
 
+function getWeek1Start() {
+  try {
+    const saved = localStorage.getItem(WEEK1_START_KEY)
+    if (saved) return new Date(saved)
+  } catch {}
+  return null
+}
+
+function getWeek1StartOrToday() {
+  return getWeek1Start() || new Date()
+}
+
+function saveWeek1Start(date) {
+  if (!localStorage.getItem(WEEK1_START_KEY)) {
+    localStorage.setItem(WEEK1_START_KEY, date.toISOString())
+  }
+}
+
+function saveWeek1Idea(ideaName) {
+  if (!localStorage.getItem(WEEK1_IDEA_KEY)) {
+    localStorage.setItem(WEEK1_IDEA_KEY, ideaName)
+  }
+}
+
 function getWeekDates(weekIndex) {
-  const start = new Date(2026, 2, 8) // March 8, 2026 — today
+  const anchor = getWeek1StartOrToday()
+  const start = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate())
   start.setDate(start.getDate() + weekIndex * 7)
   const end = new Date(start)
   end.setDate(end.getDate() + 6)
@@ -31,6 +56,8 @@ const DEFAULT_SCHEDULE = Array.from({ length: 52 }, () => ({ idea: null }))
 
 const STORAGE_KEY = '52builds-tracker-data'
 const CONFLICT_PREF_KEY = '52builds-conflict-pref'
+const WEEK1_START_KEY = 'week1StartDate'
+const WEEK1_IDEA_KEY = 'week1Idea'
 
 function loadData() {
   try {
@@ -363,6 +390,12 @@ export default function App() {
 
   useEffect(() => {
     saveData(data)
+    // Persist Week 1 anchor date and idea on first assignment
+    const week1Idea = data.schedule[0]?.idea
+    if (week1Idea) {
+      saveWeek1Start(new Date())
+      saveWeek1Idea(week1Idea.name)
+    }
   }, [data])
 
   const updateField = useCallback((id, field, value) => {
@@ -675,7 +708,10 @@ export default function App() {
       </div>
 
       {activeTab === 'about' ? (
-        <AboutPage />
+        <AboutPage
+          week1StartDate={localStorage.getItem(WEEK1_START_KEY)}
+          week1Idea={localStorage.getItem(WEEK1_IDEA_KEY)}
+        />
       ) : (
       <div className="app-layout">
         {/* Backlog Panel */}

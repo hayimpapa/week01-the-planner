@@ -1,9 +1,25 @@
-export default function AboutPage() {
+export default function AboutPage({ week1StartDate, week1Idea }) {
+  const fmtDate = (iso) => {
+    try {
+      return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+    } catch { return iso }
+  }
+
   return (
     <div className="about-page">
       <div className="about-container">
         <h2 className="about-title">About This Build</h2>
         <p className="about-week-label">Week 1 — The Planner</p>
+
+        {week1StartDate && (
+          <div className="about-section">
+            <label className="about-label">Your Journey</label>
+            <p className="about-text">
+              Your journey started on <strong>{fmtDate(week1StartDate)}</strong>
+              {week1Idea && <> with the idea: <strong>{week1Idea}</strong></>}
+            </p>
+          </div>
+        )}
 
         <div className="about-section">
           <label className="about-label">The Problem</label>
