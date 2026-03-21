@@ -3,6 +3,7 @@
     { "source": "/", "destination": "/week01/", "permanent": false }
   ],
   "rewrites": [
+    { "source": "/week01/assets/:path*", "destination": "/assets/:path*" },
     { "source": "/week01/(.*)", "destination": "/index.html" }
   ]
 }
