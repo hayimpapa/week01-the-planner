@@ -4,13 +4,15 @@ A drag-and-drop weekly planner for tracking the "52 apps in 52 weeks before I tu
 
 ## Features
 
-- Drag and drop ideas from the backlog into any of the 52 weekly slots (with overwrite/insert handling for occupied weeks)
-- Three status trackers per idea: Development, LinkedIn, YouTube
+- Drag and drop ideas from the backlog into any of the 52 weekly slots (with overwrite/insert conflict handling)
+- Dev status tracking per idea (Backlog, Analysis, In Progress, Testing, Done, Cancelled)
+- Random idea generator with auto-generated names and descriptions
 - Add new app ideas on the fly
 - Notes on each card
+- Week date ranges calculated from your start date
 - "About This Build" page template (reusable across all 52 builds)
 - All data persists in localStorage
-- Dark mode, minimal design
+- Dark theme, minimal design
 - Google Analytics GA4 support (optional)
 
 ## Getting Started
@@ -24,7 +26,7 @@ A drag-and-drop weekly planner for tracking the "52 apps in 52 weeks before I tu
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/week01-the-planner.git
+git clone https://github.com/hayimpapa/week01-the-planner.git
 cd week01-the-planner
 
 # Install dependencies
@@ -74,8 +76,11 @@ The app has built-in GA4 support. To activate it:
 │   ├── App.jsx           # Planner with drag-and-drop
 │   ├── AboutPage.jsx     # About This Build page (reusable template)
 │   └── styles.css        # All styles (dark theme)
+├── public/               # Static assets
 ├── index.html            # HTML shell
 ├── vite.config.js        # Vite config
+├── vercel.json           # Vercel routing/redirects
+├── eslint.config.js      # ESLint configuration
 ├── package.json
 └── .env.example          # GA4 env var template
 ```
