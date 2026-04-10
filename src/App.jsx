@@ -15,22 +15,25 @@ const DEV_STATUS_CLASS = {
 }
 
 
-function getWeek1Start() {
+function todayAsYMD() {
+  const t = new Date()
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+}
+
+// Week 1 start is stored as a YYYY-MM-DD string so <input type="date"> can bind to it directly.
+function loadWeek1Start() {
   try {
     const saved = localStorage.getItem(WEEK1_START_KEY)
-    if (saved) return new Date(saved)
+    if (saved) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(saved)) return saved
+      // Legacy ISO format — convert once.
+      const d = new Date(saved)
+      if (!isNaN(d)) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      }
+    }
   } catch {}
-  return null
-}
-
-function getWeek1StartOrToday() {
-  return getWeek1Start() || new Date()
-}
-
-function saveWeek1Start(date) {
-  if (!localStorage.getItem(WEEK1_START_KEY)) {
-    localStorage.setItem(WEEK1_START_KEY, date.toISOString())
-  }
+  return todayAsYMD()
 }
 
 function saveWeek1Idea(ideaName) {
@@ -39,15 +42,25 @@ function saveWeek1Idea(ideaName) {
   }
 }
 
-function getWeekDates(weekIndex) {
-  const anchor = getWeek1StartOrToday()
-  const start = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate())
+function getWeekDates(weekIndex, week1Start) {
+  const [y, m, d] = week1Start.split('-').map(Number)
+  const start = new Date(y, m - 1, d)
   start.setDate(start.getDate() + weekIndex * 7)
   const end = new Date(start)
   end.setDate(end.getDate() + 6)
-  const fmt = (d) =>
-    d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
+  const fmt = (dd) =>
+    dd.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
   return `${fmt(start)} – ${fmt(end)}`
+}
+
+function getCurrentWeekIndex(week1Start) {
+  const [y, m, d] = week1Start.split('-').map(Number)
+  const start = new Date(y, m - 1, d)
+  const today = new Date()
+  const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const diffDays = Math.floor((todayMid - start) / 86400000)
+  if (diffDays < 0 || diffDays >= 52 * 7) return -1
+  return Math.floor(diffDays / 7)
 }
 
 const DEFAULT_BACKLOG = []
@@ -362,6 +375,7 @@ export default function App() {
   const [conflict, setConflict] = useState(null)
   const [generatedIdea, setGeneratedIdea] = useState(null)
   const [selectedIdeaId, setSelectedIdeaId] = useState(null)
+  const [week1Start, setWeek1Start] = useState(loadWeek1Start)
   const mouseDownPos = useRef(null)
 
   const handleCardMouseDown = useCallback((e) => {
@@ -390,13 +404,16 @@ export default function App() {
 
   useEffect(() => {
     saveData(data)
-    // Persist Week 1 anchor date and idea on first assignment
+    // Persist Week 1 idea name on first assignment (for the About page)
     const week1Idea = data.schedule[0]?.idea
     if (week1Idea) {
-      saveWeek1Start(new Date())
       saveWeek1Idea(week1Idea.name)
     }
   }, [data])
+
+  useEffect(() => {
+    localStorage.setItem(WEEK1_START_KEY, week1Start)
+  }, [week1Start])
 
   const updateField = useCallback((id, field, value) => {
     trackEvent('status_change', `${id}:${field}:${value}`)
@@ -671,6 +688,7 @@ export default function App() {
   const scheduledCount = data.schedule.filter((w) => w.idea).length
   const doneCount = data.schedule.filter((w) => getWeekStatus(w.idea) === 'complete').length
   const streak = computeStreak(data.schedule)
+  const currentWeekIdx = getCurrentWeekIndex(week1Start)
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -775,6 +793,15 @@ export default function App() {
         {/* Schedule Panel */}
         <div className="schedule-panel">
           <div className="progress-bar-container">
+            <div className="week1-picker">
+              <label htmlFor="week1-date">Week 1 starts</label>
+              <input
+                id="week1-date"
+                type="date"
+                value={week1Start}
+                onChange={(e) => setWeek1Start(e.target.value)}
+              />
+            </div>
             <div className="progress-info">
               <span>{doneCount}/52 complete</span>
               {streak > 0 && <span className="streak-counter">{'\uD83D\uDD25'} {streak} week streak</span>}
@@ -795,18 +822,18 @@ export default function App() {
               <Droppable key={index} droppableId={`week-${index}`} direction="horizontal">
                 {(provided, snapshot) => (
                   <div
-                    className={`week-row${index === 0 ? ' current-week' : ''}${
+                    className={`week-row${index === currentWeekIdx ? ' current-week' : ''}${
                       snapshot.isDraggingOver ? ' drag-over' : ''
                     }`}
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                   >
                     <span
-                      className={`week-number wn-${weekStatus}${index === 0 ? ' current' : ''}`}
+                      className={`week-number wn-${weekStatus}${index === currentWeekIdx ? ' current' : ''}`}
                     >
                       W{index + 1}
                     </span>
-                    <span className="week-dates">{getWeekDates(index)}</span>
+                    <span className="week-dates">{getWeekDates(index, week1Start)}</span>
                     {week.idea ? (
                       <Draggable
                         draggableId={week.idea.id}
