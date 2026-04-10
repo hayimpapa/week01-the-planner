@@ -456,6 +456,38 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.week1-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.week1-picker label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.week1-picker input[type="date"] {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+  color-scheme: dark;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.week1-picker input[type="date"]:focus {
+  border-color: var(--accent);
+}
+
 .progress-info {
   display: flex;
   justify-content: space-between;
